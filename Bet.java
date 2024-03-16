@@ -60,10 +60,6 @@ public class Bet implements Comparable<Bet>{
         return getBets().get(pos);
     }
 
-    public void insertBets(Bet bet) {
-        bets.add(bet);
-    }
-
     public String allBets() {
         ArrayList<String> allBets = new ArrayList<>();
         Bet bet;
@@ -75,6 +71,10 @@ public class Bet implements Comparable<Bet>{
         return String.join(";\n\n", allBets);
     }
 
+    public void insertBets(Bet bet) {
+        bets.add(bet);
+    }
+    
     public void insertWinners(Bet bet) {
         winners.add(bet);
     }
@@ -94,27 +94,6 @@ public class Bet implements Comparable<Bet>{
         buildedNumbers.add("Nro apostado        Qtd de Apostas");
         allNumbers = addAllNumbers();
         buildedNumbers.addAll(sortedNumbers(allNumbers));
-
-        // for (Bet bet : bets) {
-        //     allNumbers.addAll(bet.getNumbers());
-        // }
-
-        // Map<Integer,Integer> occurrence = new HashMap<>();
-        // for (int number : allNumbers) {
-        //     occurrence.put(number, occurrence.getOrDefault(number, 0) + 1);
-        // }
-
-        // List<Map.Entry<Integer, Integer>> sortedOccurrence = new ArrayList<>(occurrence.entrySet());
-        // Collections.sort(sortedOccurrence, new Comparator<Map.Entry<Integer, Integer>>() {
-        //     @Override
-        //     public int compare(Map.Entry<Integer, Integer> map1, Map.Entry<Integer, Integer> map2) {
-        //         return map2.getValue().compareTo(map1.getValue()); // Decrescente
-        //     }
-        // });
-
-        // for (Map.Entry<Integer,Integer> entry : sortedOccurrence) {
-        //     buildedNumbers.add(entry.getKey() + "   " + entry.getValue());
-        // }
 
         return String.join("\n", buildedNumbers);
     }
