@@ -1,3 +1,4 @@
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -13,6 +14,7 @@ public class Bet implements Comparable<Bet>{
     private ArrayList<Bet> bets;
     private ArrayList<Bet> winners;
     private int id = 1000;
+    private DecimalFormat df;
     private static int count = 0;
 
     public Bet() {
@@ -80,15 +82,33 @@ public class Bet implements Comparable<Bet>{
     }
 
     public String buildBetWinners(ArrayList<Bet> winners) {
-        ArrayList<String> printWinners = new ArrayList<>();
+        ArrayList<String> saveWinners = new ArrayList<>();
         sortedNames();
-        for (int i = 0; i < winners.size(); i++) {
-            printWinners.add("Nome: " + winners.get(i).name + ", Números: " + winners.get(i).numbers);
+        // for (int i = 0; i < winners.size(); i++) {
+        //     saveWinners.add("Nome: " + winners.get(i).getName() + ", Números: " + winners.get(i).getNumbers());
+        // }
+        for (Bet bet : winners) {
+            saveWinners.add("Nome: " + bet.getName() + ", Números: " + bet.getNumbers());
         }
-        return String.join("\n", printWinners);
+        return String.join("\n", saveWinners);
     }
 
-    public String buildSortedNumbers() {
+    public String buildWinnersWithNameCpfPrize(ArrayList<Bet> winners, double val, ArrayList<String> cpfs) {
+        ArrayList<String> saveWinners = new ArrayList<>();
+        String format = "R$ #,##0.00";
+        df = new DecimalFormat(format);
+
+        sortedNames();
+        for (Bet bet : winners) {
+            if(cpfs.contains(bet.getCpf())) {
+                saveWinners.add("Nome: " + bet.getName() + ", CPF: " + bet.getCpf() + ", Prêmio: " + df.format(val));
+                cpfs.remove(bet.getCpf());
+            }
+        }
+        return String.join("\n", saveWinners);
+    }
+
+    public String buildOccurenceNumbers() {
         ArrayList<Integer> allNumbers = new ArrayList<>();
         ArrayList<String> buildedNumbers = new ArrayList<>();
         buildedNumbers.add("Nro apostado        Qtd de Apostas");
@@ -96,6 +116,17 @@ public class Bet implements Comparable<Bet>{
         buildedNumbers.addAll(sortedNumbers(allNumbers));
 
         return String.join("\n", buildedNumbers);
+    }
+
+    public ArrayList<String> verifyCpf(ArrayList<Bet> winners) {
+        ArrayList<String> cpfs = new ArrayList<>();
+
+        for (Bet bet : winners) {
+            if(!cpfs.contains(bet.getCpf())) {
+                cpfs.add(bet.getCpf());
+            }
+        }
+        return cpfs;
     }
 
     private ArrayList<Integer> addAllNumbers() {

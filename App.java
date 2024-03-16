@@ -1,4 +1,5 @@
 import java.awt.Dimension;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ public class App {
     private static JTextArea textArea;
     private static JScrollPane scrollPane;
     private static App app = new App();
+    private static DecimalFormat df;
 
     public static void main(String args[]) {
         // ArrayList<Integer> numbers = new ArrayList<>();
@@ -47,9 +49,9 @@ public class App {
         // numbers3.add(5);
 
         // Bet bet = new Bet("Nicolas Marques", "03046456050", numbers);
-        // Bet bet1 = new Bet("Andre Marques", "03046456050", numbers1);
-        // Bet bet2 = new Bet("Nathan Marques", "03046456050", numbers2);
-        // Bet bet3 = new Bet("Nicolas Moises", "03046456050", numbers3);
+        // Bet bet1 = new Bet("Nicolas Marques", "03046456050", numbers1);
+        // Bet bet2 = new Bet("Nathan Marques", "02046456050", numbers2);
+        // Bet bet3 = new Bet("Norton Moises", "03043456050", numbers3);
 
         // bets.insertBets(bet);
         // bets.insertBets(bet1);
@@ -66,19 +68,17 @@ public class App {
         //     }
         // }
 
+        // Prize prize = new Prize();
         // String answer = app.buildVerification(lottery, 1, bets.getWinners());
+        // String answer2 = app.buildPrize(prize, (lottery.size() - 4), bets.getWinners());
 
         // System.out.println(answer);
+        // System.out.println("\n\n");
+        // System.out.println(answer2);
 
         String[] options = {"Iniciar", "Cancelar"};
         int opt = -1;
         List<Integer> lottery = new ArrayList<>();
-
-        // opt = Integer.parseInt(JOptionPane.showInputDialog ("Bem vindo ao Sistema de Apostas\n" + "-----------------------------\n" 
-        //     + "Digite 0 - Finalizar programa\n"
-        //     + "Digite 1 - Iniciar nova edição\n"));
-
-        
 
         int init = JOptionPane.showOptionDialog(
                 null
@@ -219,7 +219,17 @@ public class App {
                                 
                                 JOptionPane.showMessageDialog(null, scrollPane, "Sistema de Apostas", JOptionPane.INFORMATION_MESSAGE);
                             } else {
+                                Prize prize = new Prize();
                                 textArea = new JTextArea(app.buildVerification(lottery, (lottery.size() - 4), bets.getWinners()));
+                                scrollPane = new JScrollPane(textArea);
+                                textArea.setLineWrap(true);//indica mudança automática de linha
+                                textArea.setWrapStyleWord(true);//configura o estilo de quebra de linha
+                                scrollPane.setPreferredSize( new Dimension( 600, 250 ) );
+
+                                JOptionPane.showMessageDialog(null, scrollPane,"Sistema de Apostas", JOptionPane.INFORMATION_MESSAGE);
+
+                                // A partir daqui é a parte do prêmio, estou montando a visualização do prêmio 
+                                textArea = new JTextArea(app.buildPrize(prize, (lottery.size() - 4), bets.getWinners()));
                                 scrollPane = new JScrollPane(textArea);
                                 textArea.setLineWrap(true);//indica mudança automática de linha
                                 textArea.setWrapStyleWord(true);//configura o estilo de quebra de linha
@@ -239,24 +249,47 @@ public class App {
     }
 
     private String buildVerification(List<Integer> lottery, int round, ArrayList<Bet> winners) {
-        ArrayList<String> end = new ArrayList<>();
+        ArrayList<String> verification = new ArrayList<>();
         
         if(winners.isEmpty()) {
-            end.add("Lista de números sorteados: " + lottery.toString());
-            end.add("Quantidade de rodadas: " + String.valueOf(round));
-            end.add("Quantidade de apostas vencedoras: " + String.valueOf(winners.size()));
-            end.add("Não houve apostas vencedoras!");
-            end.add("Lista de números apostados:\n---------------------------\n" 
-                + bets.buildSortedNumbers() + "\n---------------------------");
+            verification.add("Lista de números sorteados: " + lottery.toString());
+            verification.add("Quantidade de rodadas: " + String.valueOf(round));
+            verification.add("Quantidade de apostas vencedoras: " + String.valueOf(winners.size()));
+            verification.add("Não houve apostas vencedoras!");
+            verification.add("Lista de números apostados:\n---------------------------\n" 
+                + bets.buildOccurenceNumbers() + "\n---------------------------");
         } else {
-            end.add("Lista de números sorteados: " + lottery.toString());
-            end.add("Quantidade de rodadas: " + String.valueOf(round));
-            end.add("Quantidade de apostas vencedoras: " + String.valueOf(winners.size()));
-            end.add("Lista de apostas vencedoras:\n{\n" + bets.buildBetWinners(winners) + "\n}");
-            end.add("Lista de números apostados:\n---------------------------\n" 
-                + bets.buildSortedNumbers() + "\n---------------------------");
+            verification.add("Lista de números sorteados: " + lottery.toString());
+            verification.add("Quantidade de rodadas: " + String.valueOf(round));
+            verification.add("Quantidade de apostas vencedoras: " + String.valueOf(winners.size()));
+            verification.add("Lista de apostas vencedoras:\n{\n" + bets.buildBetWinners(winners) + "\n}");
+            verification.add("Lista de números apostados:\n---------------------------\n" 
+                + bets.buildOccurenceNumbers() + "\n---------------------------");
         }
 
-        return String.join("\n", end);
+        return String.join("\n", verification);
+    }
+
+    private String buildPrize(Prize val, int round, ArrayList<Bet> winners) {
+        ArrayList<String> prize = new ArrayList<>();
+        ArrayList<String> cpfs = bets.verifyCpf(winners);
+        String format = "R$ #,##0.00";
+        df = new DecimalFormat(format);
+
+        if(round == 1) {
+            prize.add("                 PARABÉNS VENCEDOR(ES)!!");
+            prize.add("\n\nValor original do prêmio: " + df.format(val.getPrize()));
+            prize.add("Os 5 números sorteados foram acertados na 1 rodada, por isso o valor do prêmio continua inalterado!!");
+            prize.add("Vencedor(es):\n" + bets.buildWinnersWithNameCpfPrize(winners, val.distributePrize(cpfs.size(), val.getPrize()), cpfs));
+        } else {
+            val.reducedPrize(round);
+            prize.add("                 PARABÉNS VENCEDOR(ES)!!");
+            prize.add("\n\nValor original do prêmio: " + df.format(val.getPrize()));
+            prize.add("Valor do prêmio na rodada " + round + ": " + df.format(val.getReduced()));
+            prize.add("Vencedor(es):\n" + bets.buildWinnersWithNameCpfPrize(winners, val.distributePrize(cpfs.size(), val.getReduced()), cpfs));
+        }
+        
+        
+        return String.join("\n", prize);
     }
 }
